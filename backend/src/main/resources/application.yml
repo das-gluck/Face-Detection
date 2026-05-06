@@ -1,0 +1,33 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    # Docker overrides these via docker-compose environment block
+    # Local dev: keeps your original values as fallback
+    url:      ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/Video}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:cdac@123}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  servlet:
+    multipart:
+      max-file-size: 500MB
+      max-request-size: 500MB
+
+app:
+  upload-dir:    ${APP_UPLOAD_DIR:${user.home}/face-detection/uploads}
+  processed-dir: ${APP_PROCESSED_DIR:${user.home}/face-detection/processed}
+  frames-dir:    ${APP_FRAMES_DIR:${user.home}/face-detection/frames}
+
+logging:
+  level:
+    com.demo.facedetection: DEBUG

@@ -1,0 +1,65 @@
+services:
+
+  db:
+    image: postgres:16-alpine
+    container_name: facedetect-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       Video
+      POSTGRES_USER:     postgres
+      POSTGRES_PASSWORD: cdac@123
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d Video"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: facedetect-backend
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL:         jdbc:postgresql://db:5432/Video
+      SPRING_DATASOURCE_USERNAME:    postgres
+      SPRING_DATASOURCE_PASSWORD:    cdac@123
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      APP_UPLOAD_DIR:                /data/uploads
+      APP_PROCESSED_DIR:             /data/processed
+      APP_FRAMES_DIR:                /data/frames
+    volumes:
+      - media-data:/data
+    ports:
+      - "8080:8080"
+    healthcheck:
+      # /api/roi exists in your app — no actuator needed
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/api/roi || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 8
+      start_period: 40s   # give Spring Boot time to start before first check
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_API_URL: http://localhost:8080/api
+    container_name: facedetect-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend   # just wait for container to start, not for healthy status
+    ports:
+      - "3000:3000"
+
+volumes:
+  db-data:
+  media-data:
