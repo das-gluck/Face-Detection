@@ -43,3 +43,6 @@ Notes:
 Pipeline at a glance -:
 Upload MP4 -> FFmpeg split -> Skin detect -> Draw box -> FFmpeg join (frame) -> save Db
 
+Problem Solved -:
+1. Resolved DJL and OpenCV dependency conflicts by engineering a zero-dependency face detection algorithm using standard Java AWT libraries.
+2. Debugged Docker networking, DNS resolution, and port conflicts across Ubuntu environment — configured custom DNS and health check endpoints for stable container orchestration.
